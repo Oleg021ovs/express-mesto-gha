@@ -7,7 +7,7 @@ const cardsRouter = require('./routes/cards');
 const {
   ERR_404,
   MESSAGE_404,
-// eslint-disable-next-line import/no-unresolved
+
 } = require('./error/error');
 
 const { PORT = 3000 } = process.env;

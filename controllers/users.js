@@ -1,7 +1,7 @@
 const User = require('../models/user');
 
 const {
-  OK_200,
+  OK_201,
   ERR_500,
   ERR_404,
   ERR_400,
@@ -12,8 +12,8 @@ const {
 
 module.exports.getProfile = (req, res) => {
   User.find({})
-    .then((user) => {
-      res.send(user);
+    .then((users) => {
+      res.send(users);
     })
     .catch((err) => {
       console.log(err);
@@ -42,7 +42,7 @@ module.exports.createProfile = (req, res) => {
     about: req.body.about,
     avatar: req.body.avatar,
   })
-    .then((user) => res.status(OK_200).send(user))
+    .then((user) => res.status(OK_201).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERR_400).send({ message: MESSAGE_400 });
@@ -52,25 +52,26 @@ module.exports.createProfile = (req, res) => {
     });
 };
 
-module.exports.editProfile = (req, res) => {
+module.exports.editProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
     { new: true, runValidators: true },
   )
-    .then((user) => {
-      if (user) res.send({ name, about });
-      else {
-        res.status(MESSAGE_404).send({ message: MESSAGE_404 });
-      }
-    })
-    .catch((err) => {
-      if ((err.name === 'CastError') || (err.name === 'ValidationError')) {
+    .then((user) => res.send({
+      _id: user._id,
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+    })).catch((err) => {
+      if (err.name === 'ValidationError') {
         res.status(ERR_400).send({ message: MESSAGE_400 });
-      } else {
-        res.status(ERR_500).send({ message: MESSAGE_500 });
+        // eslint-disable-next-line no-undef
+        next(new ValidationError('400'));
+        return;
       }
+      next(err);
     });
 };
 

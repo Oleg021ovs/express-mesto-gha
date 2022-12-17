@@ -10,8 +10,8 @@ const {
 // eslint-disable-next-line import/no-unresolved
 } = require('../error/error');
 
-module.exports.getInitialCard = (req, res) => {
-  Card.find(req.params.cardId, {})
+module.exports.getCard = (req, res) => {
+  Card.find({})
     .populate(['owner', 'likes'])
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
@@ -37,7 +37,7 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndDelete({ _id: req.params.cardId })
+  Card.findByIdAndDelete(req.params.cardId)
     .then((card) => {
       if (card) res.send({ message: 'Карточка удалена' });
       // eslint-disable-next-line no-undef
