@@ -66,7 +66,7 @@ module.exports.editProfile = (req, res) => {
       }
     })
     .catch((err) => {
-      if ((err.name === 'Cast to ObjectId failed') || (err.name === 'ValidationError')) {
+      if (err.name === 'ValidationError') {
         res.status(ERR_400).send({ message: MESSAGE_400 });
       } else {
         res.status(ERR_500).send({ message: MESSAGE_500 });
@@ -87,7 +87,7 @@ module.exports.editAvatar = (req, res) => {
       }
     })
     .catch((err) => {
-      if ((err.name === 'Cast to ObjectId failed') || (err.name === 'ValidationError')) {
+      if (err.name === 'ValidationError') {
         res.status(ERR_400).send({ message: MESSAGE_400 });
       } else {
         res.status(ERR_500).send({ message: MESSAGE_500 });
