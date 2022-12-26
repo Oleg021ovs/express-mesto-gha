@@ -1,5 +1,6 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-
 const {
   OK_200,
   ERR_500,
@@ -21,6 +22,21 @@ module.exports.getProfile = (req, res) => {
     });
 };
 
+module.exports.getPosts = (req, res) => {
+  User.findById(req.user)
+    .then((user) => {
+      if (user) res.send({ data: user });
+      else res.status(ERR_404).send({ message: MESSAGE_404 });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(ERR_400).send({ message: MESSAGE_400 });
+      } else {
+        res.status(ERR_500).send({ message: MESSAGE_500 });
+      }
+    });
+};
+
 module.exports.getProfileId = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
@@ -37,11 +53,17 @@ module.exports.getProfileId = (req, res) => {
 };
 
 module.exports.createProfile = (req, res) => {
-  User.create({
-    name: req.body.name,
-    about: req.body.about,
-    avatar: req.body.avatar,
-  })
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash, // записываем хеш в базу
+    }))
     .then((user) => res.status(OK_200).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -92,5 +114,26 @@ module.exports.editAvatar = (req, res) => {
       } else {
         res.status(ERR_500).send({ message: MESSAGE_500 });
       }
+    });
+};
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      // создадим токен
+      const token = jwt.sign(
+        { _id: user._id },
+        'some-secret-key',
+        { expiresIn: '7d' }, // токен будет просрочен через 7 дней после создания
+      );
+
+      // вернём токен
+      res.send({ token });
+    })
+    .catch((err) => {
+      res
+        .status(401)
+        .send({ message: err.message });
     });
 };
