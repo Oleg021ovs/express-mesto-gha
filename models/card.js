@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { linkValidate } = require('../constans/constans');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -10,6 +11,12 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator(link) {
+        return linkValidate.test(link);
+      },
+      message: () => 'Неверный формат ссылки',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

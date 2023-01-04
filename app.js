@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { celebrate, Joi } = require('celebrate');
-
+const { errors } = require('celebrate');
 const NotFoundError = require('./error/notFoundErr');
 const { linkValidate } = require('./constans/constans');
 // const userRouter = require('./routes/users');
@@ -45,7 +45,19 @@ app.use('/', require('./routes/users'));
 app.use('/', require('./routes/cards'));
 
 app.use('/', auth);
-app.use('*', NotFoundError);
+// app.use('*', NotFoundError);
+app.use((req, res, next) => {
+  next(new NotFoundError('404 - Страницы не существует'));
+});
+app.use(errors());
+app.use((err, req, res, next) => {
+  if (err.statusCode) {
+    return res.status(err.statusCode).send({ message: err.message });
+  }
+  res.status(500).send({ message: err });
+
+  return next();
+});
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 app.listen(PORT, () => {
