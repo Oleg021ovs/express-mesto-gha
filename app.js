@@ -41,10 +41,11 @@ app.post('/signup', celebrate({
   }),
 }), createProfile);
 
-app.use('/', require('./routes/users'));
-app.use('/', require('./routes/cards'));
+app.use(auth);
 
-app.use('/', auth);
+app.use('/users', require('./routes/users'));
+app.use('/cards', require('./routes/cards'));
+
 // app.use('*', NotFoundError);
 app.use((req, res, next) => {
   next(new NotFoundError('404 - Страницы не существует'));
